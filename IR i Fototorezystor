@@ -1,0 +1,65 @@
+#include <IRremote.h>
+#define irPin 11
+IRrecv irrecv(irPin);
+decode_results results;
+ 
+#define diodaPin 13
+#define diodaPin2 8
+#define diodaPin3 7
+#define diodaPin4 2
+int diodaStatus = LOW;
+int odczytanaWartosc = 0; //Zmienna do przechowywania odczytu ADC
+ 
+void setup() {
+   Serial.begin(9600);
+    irrecv.enableIRIn();
+ 
+    pinMode(diodaPin, OUTPUT);
+    pinMode(diodaPin2, OUTPUT);
+    pinMode(diodaPin3, OUTPUT);
+    pinMode(diodaPin4, OUTPUT);
+}
+ 
+void loop() {
+
+ odczytanaWartosc = analogRead(A5);//Odczytanie wartości z ADC
+
+  if (odczytanaWartosc < 400) {
+     digitalWrite(diodaPin4, HIGH);//Włączenie diody    
+  } else {
+     digitalWrite(diodaPin4, LOW);//Wyłączenie diody      
+  }
+  
+  
+   if (irrecv.decode(&results)) {
+ 
+      switch (results.value) {
+            case 0xF728D7:
+            Serial.println("żółty");
+            diodaStatus = ~diodaStatus;
+            digitalWrite(diodaPin, diodaStatus);
+            delay(50);
+            break;
+            case 0xF720DF:
+            Serial.println("czerwony");
+            diodaStatus = ~diodaStatus;
+            digitalWrite(diodaPin2, diodaStatus);
+            delay(50);
+            break;
+            case 0xF7A05F:
+            Serial.println("zielony");
+            diodaStatus = ~diodaStatus;
+            digitalWrite(diodaPin3, diodaStatus);
+            delay(50);
+            break;
+            case 0xF7E01F:
+            Serial.println("biały");
+            diodaStatus = ~diodaStatus;
+            digitalWrite(diodaPin4, diodaStatus);
+            delay(50);
+            break;
+         }
+         
+   irrecv.resume();
+   }
+}
